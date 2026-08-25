@@ -2,6 +2,15 @@
   "version": 3,
   "targets": {
     "net10.0": {
+      "Json.Net/1.0.33": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard2.0/Json.Net.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/Json.Net.dll": {}
+        }
+      },
       "Microsoft.Extensions.Configuration/10.0.11": {
         "type": "package",
         "dependencies": {
@@ -632,6 +641,27 @@
           }
         }
       },
+      "NetCord.Hosting.Services/1.0.0-beta.15": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.Configuration.Binder": "10.0.11",
+          "Microsoft.Extensions.Hosting.Abstractions": "10.0.11",
+          "Microsoft.Extensions.Options.ConfigurationExtensions": "10.0.11",
+          "Microsoft.Extensions.Options.DataAnnotations": "10.0.11",
+          "NetCord.Hosting": "1.0.0-beta.15",
+          "NetCord.Services": "1.0.0-beta.15"
+        },
+        "compile": {
+          "lib/net10.0/NetCord.Hosting.Services.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/NetCord.Hosting.Services.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "NetCord.Services/1.0.0-beta.15": {
         "type": "package",
         "dependencies": {
@@ -677,6 +707,18 @@
     }
   },
   "libraries": {
+    "Json.Net/1.0.33": {
+      "sha512": "5tE+db6BqhRAvITIVBeRsQorLGshPExfm4FmMRvWWAfs4RxeTbFFj2PIEybwmMW0qR30HKkXDYhq0YkDK2Jtxw==",
+      "type": "package",
+      "path": "json.net/1.0.33",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "json.net.1.0.33.nupkg.sha512",
+        "json.net.nuspec",
+        "lib/netstandard2.0/Json.Net.dll"
+      ]
+    },
     "Microsoft.Extensions.Configuration/10.0.11": {
       "sha512": "wlhRqZW8LcJPa+vk2oLAc/REXDItHtkFQdf/QcXYGZbZOO13izcsKY1pCvuFQYwUiZD+hwSZwsKASjqT+BNaVg==",
       "type": "package",
@@ -1603,6 +1645,21 @@
         "netcord.hosting.nuspec"
       ]
     },
+    "NetCord.Hosting.Services/1.0.0-beta.15": {
+      "sha512": "at844lHC0PFADd607RVsEPLLZu7DFCu1Sk2z+yf1yhkSaN67uNQwRDv9vSiCaW+8DmKBBoiXm3Ogs6TzXEKQiQ==",
+      "type": "package",
+      "path": "netcord.hosting.services/1.0.0-beta.15",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "ICON.png",
+        "README.md",
+        "lib/net10.0/NetCord.Hosting.Services.dll",
+        "lib/net10.0/NetCord.Hosting.Services.xml",
+        "netcord.hosting.services.1.0.0-beta.15.nupkg.sha512",
+        "netcord.hosting.services.nuspec"
+      ]
+    },
     "NetCord.Services/1.0.0-beta.15": {
       "sha512": "YPR84nmdPJYo3USQlIL4Tzbrgen4ftrC1qPCzET5M7g8rW4W3TASZtndDn1uobvv6wvt8tz4pCrshoaZaXPGAQ==",
       "type": "package",
@@ -1659,9 +1716,11 @@
   },
   "projectFileDependencyGroups": {
     "net10.0": [
+      "JSON.net >= 1.0.33",
       "Microsoft.Extensions.Hosting >= 10.0.11",
       "NetCord >= 1.0.0-beta.15",
       "NetCord.Hosting >= 1.0.0-beta.15",
+      "NetCord.Hosting.Services >= 1.0.0-beta.15",
       "NetCord.Services >= 1.0.0-beta.15"
     ]
   },
@@ -1708,6 +1767,10 @@
       "net10.0": {
         "targetAlias": "net10.0",
         "dependencies": {
+          "JSON.net": {
+            "target": "Package",
+            "version": "[1.0.33, )"
+          },
           "Microsoft.Extensions.Hosting": {
             "target": "Package",
             "version": "[10.0.11, )"
@@ -1717,6 +1780,10 @@
             "version": "[1.0.0-beta.15, )"
           },
           "NetCord.Hosting": {
+            "target": "Package",
+            "version": "[1.0.0-beta.15, )"
+          },
+          "NetCord.Hosting.Services": {
             "target": "Package",
             "version": "[1.0.0-beta.15, )"
           },

@@ -48,3 +48,6 @@
 /home/asitol/Desktop/Programming/CSharpProjects/GameDev bot/obj/Debug/net10.0/GameDev bot.pdb
 /home/asitol/Desktop/Programming/CSharpProjects/GameDev bot/obj/Debug/net10.0/GameDev bot.genruntimeconfig.cache
 /home/asitol/Desktop/Programming/CSharpProjects/GameDev bot/obj/Debug/net10.0/ref/GameDev bot.dll
+/home/asitol/Desktop/Programming/CSharpProjects/GameDev bot/obj/Debug/net10.0/GameDev bot.sourcelink.json
+/home/asitol/Desktop/Programming/CSharpProjects/GameDev bot/bin/Debug/net10.0/NetCord.Hosting.Services.dll
+/home/asitol/Desktop/Programming/CSharpProjects/GameDev bot/bin/Debug/net10.0/Json.Net.dll

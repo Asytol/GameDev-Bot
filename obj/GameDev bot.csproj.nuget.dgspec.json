@@ -44,6 +44,10 @@
         "net10.0": {
           "targetAlias": "net10.0",
           "dependencies": {
+            "Json.Net": {
+              "target": "Package",
+              "version": "[1.0.33, )"
+            },
             "Microsoft.Extensions.Hosting": {
               "target": "Package",
               "version": "[10.0.11, )"
@@ -53,6 +57,10 @@
               "version": "[1.0.0-beta.15, )"
             },
             "NetCord.Hosting": {
+              "target": "Package",
+              "version": "[1.0.0-beta.15, )"
+            },
+            "NetCord.Hosting.Services": {
               "target": "Package",
               "version": "[1.0.0-beta.15, )"
             },

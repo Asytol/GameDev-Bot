@@ -1,9 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "EIdv82Ee4dQ=",
+  "dgSpecHash": "wdrp3OV4xRI=",
   "success": true,
   "projectFilePath": "/home/asitol/Desktop/Programming/CSharpProjects/GameDev bot/GameDev bot.csproj",
   "expectedPackageFiles": [
+    "/home/asitol/.nuget/packages/json.net/1.0.33/json.net.1.0.33.nupkg.sha512",
     "/home/asitol/.nuget/packages/microsoft.extensions.configuration/10.0.11/microsoft.extensions.configuration.10.0.11.nupkg.sha512",
     "/home/asitol/.nuget/packages/microsoft.extensions.configuration.abstractions/10.0.11/microsoft.extensions.configuration.abstractions.10.0.11.nupkg.sha512",
     "/home/asitol/.nuget/packages/microsoft.extensions.configuration.binder/10.0.11/microsoft.extensions.configuration.binder.10.0.11.nupkg.sha512",
@@ -34,6 +35,7 @@
     "/home/asitol/.nuget/packages/microsoft.extensions.primitives/10.0.11/microsoft.extensions.primitives.10.0.11.nupkg.sha512",
     "/home/asitol/.nuget/packages/netcord/1.0.0-beta.15/netcord.1.0.0-beta.15.nupkg.sha512",
     "/home/asitol/.nuget/packages/netcord.hosting/1.0.0-beta.15/netcord.hosting.1.0.0-beta.15.nupkg.sha512",
+    "/home/asitol/.nuget/packages/netcord.hosting.services/1.0.0-beta.15/netcord.hosting.services.1.0.0-beta.15.nupkg.sha512",
     "/home/asitol/.nuget/packages/netcord.services/1.0.0-beta.15/netcord.services.1.0.0-beta.15.nupkg.sha512",
     "/home/asitol/.nuget/packages/system.diagnostics.eventlog/10.0.11/system.diagnostics.eventlog.10.0.11.nupkg.sha512",
     "/home/asitol/.nuget/packages/microsoft.aspnetcore.app.ref/10.0.11/microsoft.aspnetcore.app.ref.10.0.11.nupkg.sha512"
