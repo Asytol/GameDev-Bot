@@ -59,7 +59,6 @@ namespace GameDevBot
 
     public class RolesHandler(RestClient client) : ApplicationCommandModule<ApplicationCommandContext>
     {
-
         [SlashCommand("initialize", "initialize's role picking and other user choices.",DefaultGuildPermissions = Permissions.Administrator)]
         public Task<string> initialize(Channel channel) => InitializeRolePicking(Context,client,channel);
 
@@ -102,6 +101,9 @@ namespace GameDevBot
             return null;
         }
 
+        [SlashCommand("chicanery", "You think this is bad? this- this chicanery?")]
+        public string chicanery() => "*\\*Defecates through sunroof\\**";
+
     }
     public class MessageCreateHandler(ILogger<MessageCreateHandler> logger, RestClient client) : IMessageCreateGatewayHandler
     {
@@ -128,31 +130,6 @@ namespace GameDevBot
         public async ValueTask HandleAsync(MessageReactionAddEventArgs args)
         {
             Console.WriteLine("Recieved reaction");
-            //if (args.MessageAuthorId)
-
-            /*
-            EmbedProperties test = new EmbedProperties()
-            {
-                Title = "I'm just testing how embeds work",
-                Url = "https://netcord.dev/guides/basic-concepts/sending-messages.html?tabs=classic-syntax",   
-            };
-            ActionRowProperties ActionProperties = new ActionRowProperties
-            {
-                new ButtonProperties("assign_role","RoleAssignTest",ButtonStyle.Primary),
-                new ButtonProperties("button","test",ButtonStyle.Primary),
-            };
-
-            MessageProperties message = SendingMessages.CreateMessage<MessageProperties>("test",test,ActionProperties);
-            await client.SendMessageAsync(args.ChannelId, message);
-            await client.SendMessageAsync(args.ChannelId, $"<@{args.UserId}> reacted with {args.Emoji.Name}!");
-            */
-             ActionRowProperties ActionProperties = new ActionRowProperties
-            {
-                new ButtonProperties("button","test",ButtonStyle.Primary),
-            };
-
-            MessageProperties message = SendingMessages.CreateMessage<MessageProperties>("test",null,ActionProperties);
-            await client.SendMessageAsync(args.ChannelId, message);
         }
     }
 
@@ -160,15 +137,13 @@ namespace GameDevBot
     {
         public async ValueTask HandleAsync(GuildUser arg)
         {
-            /*
-            if (SettingsHandler.SettingsClass.JoinAssignRoles != null)
+            if (SettingsHandler.GlobalBotSettings.JoinAssignRoles != null)
             {
-                foreach(ulong id in SettingsHandler.SettingsClass.JoinAssignRoles)
+                foreach(ulong id in SettingsHandler.GlobalBotSettings.JoinAssignRoles)
                 {
                     await arg.AddRoleAsync(id);
                 }
-            }*/
-            //arg.   
+            }  
         }
     }
 
@@ -211,7 +186,26 @@ namespace GameDevBot
                         context.Guild.RemoveUserRoleAsync(context.User.Id,id);
                     }
                 }
-                context.Guild.AddUserRoleAsync(context.User.Id,RoleId);
+                GuildUser guilduser = await context.Guild.GetUserAsync(context.User.Id);
+                bool AlreadyHaveRole = false;
+                foreach(ulong id in guilduser.RoleIds)
+                {
+                    if (id == RoleId)
+                    {
+                        AlreadyHaveRole = true;
+                    }
+                }
+
+                if (AlreadyHaveRole)
+                {  //1539887719076073562
+                    await guilduser.RemoveRoleAsync(RoleId);
+                    Console.WriteLine($"Removed role: {RoleId} to user {context.User.Id}");
+                }
+                else
+                {
+                    await context.Guild.AddUserRoleAsync(context.User.Id,RoleId);   
+                    Console.WriteLine($"Gave role: {RoleId} to user {context.User.Id}");
+                }
 
                 await context.Interaction.SendResponseAsync(InteractionCallback.DeferredMessage());
                 await context.Interaction.DeleteResponseAsync();
@@ -265,53 +259,6 @@ namespace GameDevBot
         {
             //On github this function will be almost empty, this is just used to serialize the settings object if 
             // you have difficulty writing json yourself.
-            /*
-            SettingsClass TempSettings = new SettingsClass()
-            {
-                JoinAssignRoles = [1540833515996708906],
-                RoleMenus = [
-                    new RoleMenu{
-                        Name = "Pick a role between these 2:",
-                        Exclusive = false,
-                        RoleOptions = [
-                            new RoleOption(){
-                                Name = "role1",
-                                RoleId = 1540833705092980837,
-                                Emoji = null
-                            },
-                            new RoleOption(){
-                                Name = "role2",
-                                RoleId = 1540833781353553982,
-                                Emoji = null
-                            } 
-                        ]
-                    },
-                    new RoleMenu{
-                        Name = "Pick a exclusive role between these 2:",
-                        Exclusive = true,
-                        RoleOptions = [
-                            new RoleOption(){
-                                Name = "Exclusive1",
-                                RoleId = 1540833823816945824,
-                                Emoji = null
-                            },
-                            new RoleOption(){
-                                Name = "Exclusive2",
-                                RoleId = 1540833863188742194,
-                                Emoji = null
-                            } 
-                        ]
-                    }
-                ]
-            };
-
-            string FileName = "BotSettings.json";
-            JsonSerializerOptions options = new JsonSerializerOptions { WriteIndented = true };
-            string JsonString = JsonSerializer.Serialize(TempSettings,options);
-            File.WriteAllText(FileName,JsonString);
-
-            Console.WriteLine(File.ReadAllText(FileName));
-            */
         }
     }
 }
