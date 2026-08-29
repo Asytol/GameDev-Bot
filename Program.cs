@@ -22,6 +22,8 @@ using System.Text.Json.Serialization;
 using System.Text.Json;
 using NetCord.Services;
 using System.ComponentModel;
+using System.Net;
+using System.Text.RegularExpressions;
 
 namespace GameDevBot
 {
@@ -41,7 +43,9 @@ namespace GameDevBot
                 | GatewayIntents.GuildMessageReactions
                 | GatewayIntents.DirectMessageReactions
                 | GatewayIntents.Guilds
-                | GatewayIntents.GuildMessages;
+                | GatewayIntents.GuildMessages
+                | GatewayIntents.GuildUsers
+                | GatewayIntents.GuildPresences;
             }).AddGatewayHandlers(typeof(MessageCreateHandler).Assembly)
             .AddApplicationCommands()
             .AddComponentInteractions<ButtonInteraction, ButtonInteractionContext>()
@@ -102,7 +106,10 @@ namespace GameDevBot
         }
 
         [SlashCommand("chicanery", "You think this is bad? this- this chicanery?")]
-        public string chicanery() => "*\\*Defecates through sunroof\\**";
+        public string chicanery()
+        {
+            return "*\\*Defecates through sunroof\\**";
+        }
 
     }
     public class MessageCreateHandler(ILogger<MessageCreateHandler> logger, RestClient client) : IMessageCreateGatewayHandler
@@ -137,10 +144,12 @@ namespace GameDevBot
     {
         public async ValueTask HandleAsync(GuildUser arg)
         {
+            Console.WriteLine("Member joined");
             if (SettingsHandler.GlobalBotSettings.JoinAssignRoles != null)
             {
                 foreach(ulong id in SettingsHandler.GlobalBotSettings.JoinAssignRoles)
                 {
+                    Console.WriteLine($"Gave new member: {arg.Id} join role: {id}");
                     await arg.AddRoleAsync(id);
                 }
             }  
@@ -264,4 +273,200 @@ namespace GameDevBot
 }
 
 
+namespace HtmlSearcher
+{
 
+    internal class MainProgram
+    {
+        public static string Url = "https://itch.io/jams";
+
+        /*
+        public static void SortByDates(IList<GameJamElement> elements, IList<int> DaysLeftArgs)
+        {
+            DateTime today = new DateTime();
+            IList<GameJamElement> SortedElements;
+            foreach (GameJamElement element in elements)
+            {
+                if (today.Month - element.start_date.Month > 2)
+                {
+                    return;
+                }
+
+                foreach (int Day in DaysLeftArgs)
+                {
+                    int Distance = today.Day - element.start_date.Day; 
+                }
+            }
+        }*/
+
+
+        public static string GetPageSource(string url)
+        {
+            HttpWebRequest webrequest = (HttpWebRequest)WebRequest.Create(url);
+            webrequest.Method = "GET";
+            HttpWebResponse webresponse = (HttpWebResponse)webrequest.GetResponse();
+            string ResponseHtml;
+            using (StreamReader responseStream = new StreamReader(webresponse.GetResponseStream()))
+            {
+                ResponseHtml = responseStream.ReadToEnd();
+            }
+
+            return ResponseHtml;
+        }
+
+        public static IList<GameJamElement> GetGameJams(string ItchHtml)
+        {
+            IList<GameJamElement> JamList = [];
+            int i = 0;
+            int u = 0;
+            string CompareFilterString = "R.Jam.FilteredJamCalendar";
+            while (i < ItchHtml.Length)
+            {
+                if (ItchHtml[i] == '(')
+                {
+                    i++;
+                    for(u = 0; u < CompareFilterString.Length; u++)
+                    {
+                        //Console.Write(ItchHtml[i]);
+                        if (ItchHtml[i] != CompareFilterString[u])
+                        {
+                            goto WrongString1;
+                        }
+                        i++;
+                    }
+                    goto CorrectString1;
+                }
+                WrongString1:
+                i++;
+            }   
+            CorrectString1:
+            i += 10; //jump to the game jam list (goes past: '({"jams":['
+            while (true)
+            {
+                if (ItchHtml[i] == '{')
+                {
+                    GameJamElementReturnElement returnElement =  GetJamInformation(ItchHtml,i);
+                    i = returnElement.index;
+                    JamList.Add(returnElement.element);
+                }
+                //Console.Write(ItchHtml[i]);
+                i++;
+
+                if (ItchHtml[i] == ';')
+                {
+                    break;
+                }
+            }
+            return JamList;
+        }
+
+
+        public class SearchParamaters
+        {
+            public SearchParamaters(string MatchCase,char Terminator = '"')
+            {
+                this.MatchCase = MatchCase;
+                this.Terminator = Terminator;
+            }
+            public string MatchCase = "";
+            public char Terminator = '"';
+            public string Result = "";
+        }
+
+        public static GameJamElementReturnElement GetJamInformation(string ItchHtml, int index)
+        {
+            int BeginningIndex = index;
+            int i = index;
+
+            IList<SearchParamaters> paramaters = [
+                new SearchParamaters("\"title\":"),
+                new SearchParamaters("\"url\":"),
+                new SearchParamaters("\"joined\":",','),
+                new SearchParamaters("\"start_date\":"),
+                new SearchParamaters("\"end_date\":")
+            ];
+
+
+            foreach (SearchParamaters paramater in paramaters)
+            {
+                i = BeginningIndex;
+                string SearchParamater = paramater.MatchCase;
+                while (true)
+                {
+                    if (SearchParamater[0] == ItchHtml[i])
+                    {
+                        i++;
+                        for (int u = 1; u < SearchParamater.Length; u++)
+                        {
+                            if (SearchParamater[u] != ItchHtml[i])
+                            {
+                                goto WrongString;
+                            }
+                            i++;
+                        }
+                        goto CorrectString;
+                    }
+                    WrongString:
+                    i++;
+                }
+                CorrectString:
+                if (ItchHtml[i] == paramater.Terminator){i++;}
+
+                int startIndex = i;
+                int length = 0;
+                while (ItchHtml[i] != paramater.Terminator)
+                {
+                    i++;
+                    length++;                
+                }
+
+                paramater.Result = ItchHtml.Substring(startIndex, length);   
+            }
+
+            GameJamElement element = new GameJamElement(
+                paramaters[0].Result,
+                paramaters[1].Result,
+                paramaters[2].Result,
+                paramaters[3].Result,
+                paramaters[4].Result
+            );
+
+
+            Console.WriteLine($"[ {element.end_date} | {element.PlayerAmount} | {element.title} | {element.url} | {element.start_date} ]");
+            //Console.Write(element.url);
+            //Console.Write(element.PlayerAmount);
+            //Console.Write(element.start_date);
+            return new GameJamElementReturnElement(element,i);
+        }
+
+        public class GameJamElementReturnElement
+        {
+            public GameJamElement element;
+            public int index;
+            public GameJamElementReturnElement(GameJamElement element, int index)
+            {
+                this.element = element;
+                this.index = index;
+            }
+        }
+
+        public class GameJamElement
+        {
+            public string title = "";
+            public string url = "";
+            public string PlayerAmount = "";
+            public string start_date;
+            public string end_date;
+            public GameJamElement(string title, string url, string PlayerAmount, string start_date, string end_date)
+            {
+                this.title = title;
+                this.url = url;
+                this.PlayerAmount = PlayerAmount;
+                this.start_date = start_date;
+                this.end_date = end_date;
+            }
+        }
+    };
+
+    
+}
