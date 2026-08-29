@@ -24,6 +24,7 @@ using NetCord.Services;
 using System.ComponentModel;
 using System.Net;
 using System.Text.RegularExpressions;
+using NetCord.Hosting.Rest;
 
 namespace GameDevBot
 {
@@ -111,6 +112,29 @@ namespace GameDevBot
             return "*\\*Defecates through sunroof\\**";
         }
 
+        [SlashCommand("SetGameJamChannel", "Sets the channel where the bot announces upcoming game jams",DefaultGuildPermissions = Permissions.BanUsers)]
+        public string SetGameJamChannel(Channel channel)
+        {
+            try{
+                SettingsHandler.GlobalBotSettings.UpcomingGamesChannel = channel.Id;
+                string JsonString = JsonSerializer.Serialize(SettingsHandler.GlobalBotSettings);
+                File.WriteAllText(SettingsHandler.SavePath,JsonString);
+                BackgroundTaskHandler.Client = client;
+                return "Sucess";
+            }
+            catch
+            {
+                return "Failed";
+            }
+
+        }
+        [SlashCommand("AssignClient", "Command for fixing the error: Client is null",DefaultGuildPermissions = Permissions.BanUsers)]
+        public string AssignClient()
+        {
+            BackgroundTaskHandler.Client = client;
+            return "re-Assigned client";
+        }
+
     }
     public class MessageCreateHandler(ILogger<MessageCreateHandler> logger, RestClient client) : IMessageCreateGatewayHandler
     {
@@ -160,13 +184,16 @@ namespace GameDevBot
     {
         
 
-        public static T CreateMessage<T>(string content, EmbedProperties ?embed, IMessageComponentProperties properties) where T : IMessageProperties, new()
+        public static T CreateMessage<T>(string content, EmbedProperties ?embed, IMessageComponentProperties? properties) where T : IMessageProperties, new()
         {
             T message = new();
 
             message.Content = content;
             message.Components = [];
-            message.AddComponents(properties);
+            if (properties != null)
+            {
+                message.AddComponents(properties);   
+            }
             if (embed != null)
             {
                 message.AddEmbeds(embed);   
@@ -229,12 +256,77 @@ namespace GameDevBot
         public string Menu() => $"You selected: {string.Join(", ", Context.SelectedValues)}";
     }
 
+    public class BackgroundTaskHandler
+    {
+        public static RestClient Client;
+        public static string ItchAddres = "https://itch.io/jams";
+        public async static Task StartEveryDayMonitoring()
+        {
+            DateTime date = DateTime.Now;
+
+            await Task.Run(() =>
+            {
+                while (true)
+                {
+                    if (date.Hour == 0)
+                    {
+                        Console.WriteLine("Date synchronized");
+                        break;
+                    }   
+                    Thread.Sleep(120000);   
+                }
+                ReportUpcomingGameJams(null);
+            });
+        }
+
+        public static async void ReportUpcomingGameJams(Object? obj)
+        {
+            Console.WriteLine("New day started");
+
+            if (Client == null)
+            {
+                Console.WriteLine("Error: Client is null  (Run \"/AssignClient\" or get Adam's lazy ass to fix the GameJamReport function)");
+                goto NullClient;
+            }
+
+            if (SettingsHandler.GlobalBotSettings.UpcomingGamesChannel != null && SettingsHandler.GlobalBotSettings.UpcomingGamesChannel != 0)
+            {
+                string itchHtml = HtmlSearcher.MainProgram.GetPageSource(ItchAddres);
+                IList<HtmlSearcher.MainProgram.GameJamElement> gameJamElements = HtmlSearcher.MainProgram.GetGameJams(itchHtml);
+                gameJamElements = HtmlSearcher.MainProgram.SortByDates(gameJamElements,[1,3,7]);
+                
+                foreach(HtmlSearcher.MainProgram.GameJamElement element in gameJamElements)
+                {
+                    EmbedProperties embed = new EmbedProperties();
+                    embed.Url = element.url;
+                    MessageProperties properties = SendingMessages.CreateMessage<MessageProperties>($"Upcoming game jam: \n Title: {element.title} | Joined:{element.PlayerAmount} | Starts in: {element.DaysLeft}",embed,null);
+
+                    await Client.SendMessageAsync((ulong)SettingsHandler.GlobalBotSettings.UpcomingGamesChannel,properties);   
+                }
+            }
+            else
+            {
+                Console.WriteLine("Invalid channel");
+            }
+
+            NullClient:
+
+            DateTime today = DateTime.Now;
+            DateTime tomorrow = DateTime.Today.AddDays(1);
+
+            int TimeDelay = (today - tomorrow).Milliseconds;
+            Console.WriteLine(TimeDelay);
+            Timer timer = new Timer(new TimerCallback(ReportUpcomingGameJams),null,TimeDelay,Timeout.Infinite);
+        }
+    }
+
     public class SettingsHandler()
     {
         public static SettingsClass? GlobalBotSettings = null;
+        public static readonly string SavePath = "BotSettings.json";
         public static void LoadEnviorment()
         {
-            string json = System.IO.File.ReadAllText("BotSettings.json");
+            string json = System.IO.File.ReadAllText(SavePath);
 
             SettingsClass? settings = JsonSerializer.Deserialize<SettingsClass>(json);
 
@@ -248,6 +340,7 @@ namespace GameDevBot
             public IList<ulong>? JoinAssignRoles {get; set;}
 
             public IList<RoleMenu>? RoleMenus {get; set;}
+            public ulong? UpcomingGamesChannel {get; set;}
         }
 
         public class RoleMenu
@@ -280,24 +373,27 @@ namespace HtmlSearcher
     {
         public static string Url = "https://itch.io/jams";
 
-        /*
-        public static void SortByDates(IList<GameJamElement> elements, IList<int> DaysLeftArgs)
+        public static IList<GameJamElement> SortByDates(IList<GameJamElement> elements, IList<int> DaysLeftArgs)
         {
-            DateTime today = new DateTime();
-            IList<GameJamElement> SortedElements;
+            Console.WriteLine("Day intervals:");
+            DateTime today = DateTime.Now;
+            IList<GameJamElement> SortedElements = [];
             foreach (GameJamElement element in elements)
             {
-                if (today.Month - element.start_date.Month > 2)
+                int Distance = (element.start_date - today).Days;
+                foreach (int day in DaysLeftArgs)
                 {
-                    return;
-                }
-
-                foreach (int Day in DaysLeftArgs)
-                {
-                    int Distance = today.Day - element.start_date.Day; 
+                    if (Distance == day)
+                    {
+                        element.DaysLeft = Distance;
+                        SortedElements.Add(element);
+                        Console.WriteLine("Element is in appropriate time range");
+                    }
                 }
             }
-        }*/
+
+            return SortedElements;
+        }
 
 
         public static string GetPageSource(string url)
@@ -433,9 +529,6 @@ namespace HtmlSearcher
 
 
             Console.WriteLine($"[ {element.end_date} | {element.PlayerAmount} | {element.title} | {element.url} | {element.start_date} ]");
-            //Console.Write(element.url);
-            //Console.Write(element.PlayerAmount);
-            //Console.Write(element.start_date);
             return new GameJamElementReturnElement(element,i);
         }
 
@@ -455,15 +548,31 @@ namespace HtmlSearcher
             public string title = "";
             public string url = "";
             public string PlayerAmount = "";
-            public string start_date;
-            public string end_date;
+            public DateTime start_date;
+            public DateTime end_date;
+            public int DaysLeft;
             public GameJamElement(string title, string url, string PlayerAmount, string start_date, string end_date)
             {
                 this.title = title;
                 this.url = url;
                 this.PlayerAmount = PlayerAmount;
-                this.start_date = start_date;
-                this.end_date = end_date;
+                try
+                {
+                    this.start_date = DateTime.Parse(start_date);   
+                }
+                catch
+                {
+                    this.start_date = DateTime.MaxValue;
+                }
+                
+                try
+                {
+                    this.end_date = DateTime.Parse(end_date);   
+                }
+                catch
+                {
+                    this.end_date = DateTime.MaxValue;
+                }
             }
         }
     };
