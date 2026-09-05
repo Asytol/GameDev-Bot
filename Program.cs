@@ -53,15 +53,15 @@ namespace GameDevBot
             .AddComponentInteractions<RoleMenuInteraction, RoleMenuInteractionContext>();
 
             IHost host = builder.Build();
-
             host.AddModules(typeof(MainProgram).Assembly);
-
+            BackgroundTaskHandler.StartEveryDayMonitoring();
             await host.RunAsync();
 
             Console.WriteLine("discord bot closed");
         }
     }
-
+    // ___--___
+    // ___--___
     public class RolesHandler(RestClient client) : ApplicationCommandModule<ApplicationCommandContext>
     {
         [SlashCommand("initialize", "initialize's role picking and other user choices.",DefaultGuildPermissions = Permissions.Administrator)]
@@ -69,15 +69,15 @@ namespace GameDevBot
 
         private static async Task<string> InitializeRolePicking(ApplicationCommandContext context, RestClient client, Channel channel)
         {
-            if (SettingsHandler.GlobalBotSettings == null)
+            if (SettingsHandler.GlobalBotSettings == null || SettingsHandler.GlobalBotSettings.RoleMenus == null)
             {
                 return "Error: BotSettings are null or improperly set";
             }
             
             IList<SettingsHandler.RoleMenu> LoadedRoleMenu = SettingsHandler.GlobalBotSettings.RoleMenus;
+            //Goes through all the menus in the botsettings, each menu contains a specific amount of buttons
             foreach (SettingsHandler.RoleMenu menu in LoadedRoleMenu)
             {
-                ActionRowProperties ActionProperties = new ActionRowProperties();
                 IList<ButtonProperties> ButtonList = [];
 
                 foreach (SettingsHandler.RoleOption option in menu.RoleOptions){
@@ -87,8 +87,8 @@ namespace GameDevBot
                     Console.WriteLine(CustomId);   
                     ButtonList.Add(new ButtonProperties("assign_role",option.Name,ButtonStyle.Primary).WithCustomId(CustomId));
                 };
-                ActionProperties = ConstructButton(ButtonList);
-                MessageProperties message = SendingMessages.CreateMessage<MessageProperties>(menu.Name,null,ActionProperties);
+                ActionRowProperties ActionProperties = ConstructButton(ButtonList);
+                MessageProperties message = SendingMessages.CreateMessage<MessageProperties>($"```\n{menu.Name}\n```",null,ActionProperties);
                 await client.SendMessageAsync(channel.Id,message);
             }
 
@@ -119,8 +119,6 @@ namespace GameDevBot
                 SettingsHandler.GlobalBotSettings.UpcomingGamesChannel = channel.Id;
                 string JsonString = JsonSerializer.Serialize(SettingsHandler.GlobalBotSettings);
                 File.WriteAllText(SettingsHandler.SavePath,JsonString);
-                BackgroundTaskHandler.Client = client;
-                BackgroundTaskHandler.StartEveryDayMonitoring();
                 return "Sucess";
             }
             catch
@@ -128,20 +126,9 @@ namespace GameDevBot
                 return "Failed";
             }
         }
-        [SlashCommand("assign-client", "Command for fixing the error: Client is null",DefaultGuildPermissions = Permissions.BanUsers)]
-        public string AssignClient()
-        {
-            BackgroundTaskHandler.Client = client;
-            BackgroundTaskHandler.StartEveryDayMonitoring();
-            return "re-Assigned client";
-        }
-        [SlashCommand("silent-assign-client", "The assign client command but without executing any functions", DefaultGuildPermissions = Permissions.BanUsers)]
-        public string SilentAssignClient()
-        {
-            BackgroundTaskHandler.Client = client;
-            return "silent re-Assign";
-        }
     }
+    // ___--___
+    // ___--___
     public class MessageCreateHandler(ILogger<MessageCreateHandler> logger, RestClient client) : IMessageCreateGatewayHandler
     {
         public ValueTask HandleAsync(Message message)
@@ -264,7 +251,6 @@ namespace GameDevBot
 
     public class BackgroundTaskHandler
     {
-        public static RestClient Client;
         public static string ItchAddres = "https://itch.io/jams";
         public async static Task StartEveryDayMonitoring()
         {
@@ -287,34 +273,45 @@ namespace GameDevBot
             });
         }
 
+        public static IList<int> TitleColors = [31,32,34];
         public static async void ReportUpcomingGameJams(Object? obj)
         {
             Console.WriteLine("New day started");
 
+            if (SettingsHandler.GlobalBotSettings.Token == null)
+            {
+                goto NullClient;
+            }
+            RestClient client = new(new BotToken(SettingsHandler.GlobalBotSettings.Token));
             if (SettingsHandler.GlobalBotSettings.UpcomingGamesChannel != null && SettingsHandler.GlobalBotSettings.UpcomingGamesChannel != 0)
             {
-                if (Client == null)
-                {
-                    Console.WriteLine("Error: Client is null");
-                    await Client.SendMessageAsync((ulong)SettingsHandler.GlobalBotSettings.UpcomingGamesChannel,"Error: Client is null  (Run \"/AssignClient\" or get Adam's lazy ass to fix the GameJamReport function)");
-                    goto NullClient;
-                }
                 string itchHtml = HtmlSearcher.MainProgram.GetPageSource(ItchAddres);
                 IList<HtmlSearcher.MainProgram.GameJamElement> gameJamElements = HtmlSearcher.MainProgram.GetGameJams(itchHtml);
                 gameJamElements = HtmlSearcher.MainProgram.SortByDates(gameJamElements,[1,3,7]);
+                if (gameJamElements.Count == 0)
+                {
+                    await client.SendMessageAsync((ulong)SettingsHandler.GlobalBotSettings.UpcomingGamesChannel,$"No game jams starting within: {gameJamElements[0]} or {gameJamElements[1]} or {gameJamElements[2]} days");
+                    goto NullClient;
+                }
 
                 EmbedProperties StartEmbed = new EmbedProperties();
                 StartEmbed.WithUrl(ItchAddres).WithTitle("Itch.io").WithDescription("Itch.io is a website to publish and play games");
                 MessageProperties StartProperties = SendingMessages.CreateMessage<MessageProperties>("**List of game jams pulled from the itch.io website: **",StartEmbed,null);
-                await Client.SendMessageAsync((ulong)SettingsHandler.GlobalBotSettings.UpcomingGamesChannel,StartProperties);
+                await client.SendMessageAsync((ulong)SettingsHandler.GlobalBotSettings.UpcomingGamesChannel,StartProperties);
                 //Sending all of the jams:
+                int TitleIndex = 0;
                 foreach(HtmlSearcher.MainProgram.GameJamElement element in gameJamElements)
                 {
+                    TitleIndex++;
+                    if(TitleIndex == TitleColors.Count)
+                    {
+                        TitleIndex = 0;
+                    }
                     EmbedProperties embed = new EmbedProperties();
                     embed.Url = "https://itch.io/" + element.url;
-                    MessageProperties properties = SendingMessages.CreateMessage<MessageProperties>($"**Upcoming game jam:** \n ```ansi\nTitle: {element.title} | Joined: {element.PlayerAmount} | Starts in: {element.DaysLeft} days\n```",null,null);
+                    MessageProperties properties = SendingMessages.CreateMessage<MessageProperties>($"```ansi\n[0;39m[1;{TitleColors[TitleIndex]}mTitle:[0;39m \"{element.title}\"\n[1;39m| Joined:[0;39m {element.PlayerAmount}[1;39m | Starts in:[0;39m {element.DaysLeft} days [1;39m | Url:[0;39m <{"https://itch.io"+element.url}>\n```",null,null);
 
-                    await Client.SendMessageAsync((ulong)SettingsHandler.GlobalBotSettings.UpcomingGamesChannel,properties);   
+                    await client.SendMessageAsync((ulong)SettingsHandler.GlobalBotSettings.UpcomingGamesChannel,properties);   
                 }
             }
             else
@@ -324,7 +321,7 @@ namespace GameDevBot
 
             NullClient:
 
-            DateTime today = DateTime.Now.AddHours(8);
+            DateTime today = DateTime.Now;
             DateTime tomorrow = DateTime.Today.AddDays(1).AddHours(8);
 
             int TimeDelay = (int)(tomorrow-today).TotalMilliseconds;
@@ -350,6 +347,7 @@ namespace GameDevBot
 
         public class SettingsClass
         {
+            public string? Token {get; set;}
             public IList<ulong>? JoinAssignRoles {get; set;}
 
             public IList<RoleMenu>? RoleMenus {get; set;}
@@ -393,7 +391,7 @@ namespace HtmlSearcher
             IList<GameJamElement> SortedElements = [];
             foreach (GameJamElement element in elements)
             {
-                int Distance = (element.start_date - today).Days;
+                int Distance = (element.start_date.Date - today.Date).Days;
                 foreach (int day in DaysLeftArgs)
                 {
                     if (Distance == day)
