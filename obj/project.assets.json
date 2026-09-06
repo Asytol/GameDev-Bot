@@ -1716,7 +1716,7 @@
   },
   "projectFileDependencyGroups": {
     "net10.0": [
-      "JSON.net >= 1.0.33",
+      "Json.Net >= 1.0.33",
       "Microsoft.Extensions.Hosting >= 10.0.11",
       "NetCord >= 1.0.0-beta.15",
       "NetCord.Hosting >= 1.0.0-beta.15",
@@ -1767,7 +1767,7 @@
       "net10.0": {
         "targetAlias": "net10.0",
         "dependencies": {
-          "JSON.net": {
+          "Json.Net": {
             "target": "Package",
             "version": "[1.0.33, )"
           },

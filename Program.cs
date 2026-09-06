@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
+using System.Diagnostics;
 
 
 //Netcord
@@ -31,6 +32,7 @@ namespace GameDevBot
     public delegate string InitDelegator();
     internal class MainProgram
     {
+        public static Process DrawingApp;
         static async Task Main(string[] args){
             SettingsHandler.LoadEnviorment();
 
@@ -55,6 +57,15 @@ namespace GameDevBot
             IHost host = builder.Build();
             host.AddModules(typeof(MainProgram).Assembly);
             BackgroundTaskHandler.StartEveryDayMonitoring();
+
+            //Launching fun app
+            ProcessStartInfo startInfo = new ProcessStartInfo("GtkDrawingApp");
+            startInfo.RedirectStandardInput = true; startInfo.UseShellExecute = false;
+
+            DrawingApp = new Process();
+            DrawingApp.StartInfo = startInfo;
+            DrawingApp.Start();
+
             await host.RunAsync();
 
             Console.WriteLine("discord bot closed");
@@ -88,7 +99,7 @@ namespace GameDevBot
                     ButtonList.Add(new ButtonProperties("assign_role",option.Name,ButtonStyle.Primary).WithCustomId(CustomId));
                 };
                 ActionRowProperties ActionProperties = ConstructButton(ButtonList);
-                MessageProperties message = SendingMessages.CreateMessage<MessageProperties>($"```\n{menu.Name}\n```",null,ActionProperties);
+                MessageProperties message = SendingMessages.CreateMessage<MessageProperties>($"```\n{menu.Name}\n```",null,ActionProperties,null);
                 await client.SendMessageAsync(channel.Id,message);
             }
 
@@ -125,6 +136,54 @@ namespace GameDevBot
             {
                 return "Failed";
             }
+        }
+
+        [SlashCommand("set-drawingapp-channel", "Sets the channel where people draw and the bot sends drawings",DefaultGuildPermissions = Permissions.BanUsers)]
+        public string SetDrawingAppChannel(Channel channel)
+        {
+            try
+            {
+                SettingsHandler.GlobalBotSettings.DrawingAppChannel = channel.Id;
+                string JsonString = JsonSerializer.Serialize(SettingsHandler.GlobalBotSettings);
+                File.WriteAllText(SettingsHandler.SavePath,JsonString);
+                return "Sucess";
+            }
+            catch
+            {
+                return "Failed";
+            }
+        }
+
+        static readonly string DrawingImage = "GtkImageOutput.png";
+
+        [SlashCommand("draw","Draws a square at a pixel position")]
+        public async void Draw(int Red, int Green, int Blue, int x, int y)
+        {
+            if (Context.Channel.Id != SettingsHandler.GlobalBotSettings.DrawingAppChannel)
+            {
+                InteractionMessageProperties error_message = SendingMessages.CreateMessage<InteractionMessageProperties>("Please send this command inside the appropriate channel",null,null,null);
+                InteractionCallbackProperties error_callback = InteractionCallback.Message(error_message);
+                await Context.Interaction.SendResponseAsync(error_callback);
+                return;
+            }
+
+            MainProgram.DrawingApp.StandardInput.WriteLine($"{Red}:{Green}:{Blue}:{x}:{y}:");
+            Thread.Sleep(300); //Gives the drawing app some leway
+
+            EmbedProperties embed = new EmbedProperties();
+
+            System.IO.FileStream stream = File.OpenRead(DrawingImage);
+            AttachmentProperties attachment = new AttachmentProperties(DrawingImage,stream);
+            
+            Console.WriteLine("Name: " + attachment.FileName);
+            embed.WithImage(new EmbedImageProperties($"attachment://{DrawingImage}")).WithTitle("Drawing");
+
+            InteractionMessageProperties message = SendingMessages.CreateMessage<InteractionMessageProperties>($"Drew pixel at {x},{y}",embed,null,attachment);
+
+            //don't forget to return a message with a picture
+            InteractionCallbackProperties callback = InteractionCallback.Message(message);
+            await Context.Interaction.SendResponseAsync(callback);
+            stream.Dispose();
         }
     }
     // ___--___
@@ -177,7 +236,7 @@ namespace GameDevBot
     {
         
 
-        public static T CreateMessage<T>(string content, EmbedProperties ?embed, IMessageComponentProperties properties) where T : IMessageProperties, new()
+        public static T CreateMessage<T>(string content, EmbedProperties ?embed, IMessageComponentProperties ?properties,AttachmentProperties ?attachment) where T : IMessageProperties, new()
         {
             T message = new();
 
@@ -190,6 +249,10 @@ namespace GameDevBot
             if (embed != null)
             {
                 message.AddEmbeds(embed);   
+            }
+            if (attachment != null)
+            {
+                message.AddAttachments(attachment);
             }
 
             return message;
@@ -236,9 +299,7 @@ namespace GameDevBot
                     Console.WriteLine($"Gave role: {RoleId} to user {context.User.Id}");
                 }
 
-                await context.Interaction.SendResponseAsync(InteractionCallback.DeferredMessage());
-                await context.Interaction.DeleteResponseAsync();
-                //Response.Dispose();
+                await context.Interaction.SendResponseAsync(InteractionCallback.DeferredModifyMessage);
             }
         }
     }
@@ -296,7 +357,7 @@ namespace GameDevBot
 
                 EmbedProperties StartEmbed = new EmbedProperties();
                 StartEmbed.WithUrl(ItchAddres).WithTitle("Itch.io").WithDescription("Itch.io is a website to publish and play games");
-                MessageProperties StartProperties = SendingMessages.CreateMessage<MessageProperties>("**List of game jams pulled from the itch.io website: **",StartEmbed,null);
+                MessageProperties StartProperties = SendingMessages.CreateMessage<MessageProperties>("**List of game jams pulled from the itch.io website: **",StartEmbed,null,null);
                 await client.SendMessageAsync((ulong)SettingsHandler.GlobalBotSettings.UpcomingGamesChannel,StartProperties);
                 //Sending all of the jams:
                 int TitleIndex = 0;
@@ -309,7 +370,7 @@ namespace GameDevBot
                     }
                     EmbedProperties embed = new EmbedProperties();
                     embed.Url = "https://itch.io/" + element.url;
-                    MessageProperties properties = SendingMessages.CreateMessage<MessageProperties>($"```ansi\n[0;39m[1;{TitleColors[TitleIndex]}mTitle:[0;39m \"{element.title}\"\n[1;39m| Joined:[0;39m {element.PlayerAmount}[1;39m | Starts in:[0;39m {element.DaysLeft} days [1;39m | Url:[0;39m <{"https://itch.io"+element.url}>\n```",null,null);
+                    MessageProperties properties = SendingMessages.CreateMessage<MessageProperties>($"```ansi\n[0;39m[1;{TitleColors[TitleIndex]}mTitle:[0;39m \"{element.title}\"\n[1;39m| Joined:[0;39m {element.PlayerAmount}[1;39m | Starts in:[0;39m {element.DaysLeft} days [1;39m | Url:[0;39m {"https://itch.io"+element.url}\n```",null,null,null);
 
                     await client.SendMessageAsync((ulong)SettingsHandler.GlobalBotSettings.UpcomingGamesChannel,properties);   
                 }
@@ -352,6 +413,8 @@ namespace GameDevBot
 
             public IList<RoleMenu>? RoleMenus {get; set;}
             public ulong? UpcomingGamesChannel {get; set;}
+
+            public ulong? DrawingAppChannel {get; set;}
         }
 
         public class RoleMenu

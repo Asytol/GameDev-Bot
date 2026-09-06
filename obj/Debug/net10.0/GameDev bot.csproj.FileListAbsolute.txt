@@ -51,3 +51,55 @@
 /home/asitol/Desktop/Programming/CSharpProjects/GameDev bot/obj/Debug/net10.0/GameDev bot.sourcelink.json
 /home/asitol/Desktop/Programming/CSharpProjects/GameDev bot/bin/Debug/net10.0/NetCord.Hosting.Services.dll
 /home/asitol/Desktop/Programming/CSharpProjects/GameDev bot/bin/Debug/net10.0/Json.Net.dll
+/home/asitol/Desktop/Programming/CSharpProjects/GameDevBotProduction/bin/Debug/net10.0/GameDev bot
+/home/asitol/Desktop/Programming/CSharpProjects/GameDevBotProduction/bin/Debug/net10.0/GameDev bot.deps.json
+/home/asitol/Desktop/Programming/CSharpProjects/GameDevBotProduction/bin/Debug/net10.0/GameDev bot.runtimeconfig.json
+/home/asitol/Desktop/Programming/CSharpProjects/GameDevBotProduction/bin/Debug/net10.0/GameDev bot.dll
+/home/asitol/Desktop/Programming/CSharpProjects/GameDevBotProduction/bin/Debug/net10.0/GameDev bot.pdb
+/home/asitol/Desktop/Programming/CSharpProjects/GameDevBotProduction/bin/Debug/net10.0/Json.Net.dll
+/home/asitol/Desktop/Programming/CSharpProjects/GameDevBotProduction/bin/Debug/net10.0/Microsoft.Extensions.Configuration.dll
+/home/asitol/Desktop/Programming/CSharpProjects/GameDevBotProduction/bin/Debug/net10.0/Microsoft.Extensions.Configuration.Abstractions.dll
+/home/asitol/Desktop/Programming/CSharpProjects/GameDevBotProduction/bin/Debug/net10.0/Microsoft.Extensions.Configuration.Binder.dll
+/home/asitol/Desktop/Programming/CSharpProjects/GameDevBotProduction/bin/Debug/net10.0/Microsoft.Extensions.Configuration.CommandLine.dll
+/home/asitol/Desktop/Programming/CSharpProjects/GameDevBotProduction/bin/Debug/net10.0/Microsoft.Extensions.Configuration.EnvironmentVariables.dll
+/home/asitol/Desktop/Programming/CSharpProjects/GameDevBotProduction/bin/Debug/net10.0/Microsoft.Extensions.Configuration.FileExtensions.dll
+/home/asitol/Desktop/Programming/CSharpProjects/GameDevBotProduction/bin/Debug/net10.0/Microsoft.Extensions.Configuration.Json.dll
+/home/asitol/Desktop/Programming/CSharpProjects/GameDevBotProduction/bin/Debug/net10.0/Microsoft.Extensions.Configuration.UserSecrets.dll
+/home/asitol/Desktop/Programming/CSharpProjects/GameDevBotProduction/bin/Debug/net10.0/Microsoft.Extensions.DependencyInjection.dll
+/home/asitol/Desktop/Programming/CSharpProjects/GameDevBotProduction/bin/Debug/net10.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll
+/home/asitol/Desktop/Programming/CSharpProjects/GameDevBotProduction/bin/Debug/net10.0/Microsoft.Extensions.Diagnostics.dll
+/home/asitol/Desktop/Programming/CSharpProjects/GameDevBotProduction/bin/Debug/net10.0/Microsoft.Extensions.Diagnostics.Abstractions.dll
+/home/asitol/Desktop/Programming/CSharpProjects/GameDevBotProduction/bin/Debug/net10.0/Microsoft.Extensions.FileProviders.Abstractions.dll
+/home/asitol/Desktop/Programming/CSharpProjects/GameDevBotProduction/bin/Debug/net10.0/Microsoft.Extensions.FileProviders.Physical.dll
+/home/asitol/Desktop/Programming/CSharpProjects/GameDevBotProduction/bin/Debug/net10.0/Microsoft.Extensions.FileSystemGlobbing.dll
+/home/asitol/Desktop/Programming/CSharpProjects/GameDevBotProduction/bin/Debug/net10.0/Microsoft.Extensions.Hosting.dll
+/home/asitol/Desktop/Programming/CSharpProjects/GameDevBotProduction/bin/Debug/net10.0/Microsoft.Extensions.Hosting.Abstractions.dll
+/home/asitol/Desktop/Programming/CSharpProjects/GameDevBotProduction/bin/Debug/net10.0/Microsoft.Extensions.Logging.dll
+/home/asitol/Desktop/Programming/CSharpProjects/GameDevBotProduction/bin/Debug/net10.0/Microsoft.Extensions.Logging.Abstractions.dll
+/home/asitol/Desktop/Programming/CSharpProjects/GameDevBotProduction/bin/Debug/net10.0/Microsoft.Extensions.Logging.Configuration.dll
+/home/asitol/Desktop/Programming/CSharpProjects/GameDevBotProduction/bin/Debug/net10.0/Microsoft.Extensions.Logging.Console.dll
+/home/asitol/Desktop/Programming/CSharpProjects/GameDevBotProduction/bin/Debug/net10.0/Microsoft.Extensions.Logging.Debug.dll
+/home/asitol/Desktop/Programming/CSharpProjects/GameDevBotProduction/bin/Debug/net10.0/Microsoft.Extensions.Logging.EventLog.dll
+/home/asitol/Desktop/Programming/CSharpProjects/GameDevBotProduction/bin/Debug/net10.0/Microsoft.Extensions.Logging.EventSource.dll
+/home/asitol/Desktop/Programming/CSharpProjects/GameDevBotProduction/bin/Debug/net10.0/Microsoft.Extensions.Options.dll
+/home/asitol/Desktop/Programming/CSharpProjects/GameDevBotProduction/bin/Debug/net10.0/Microsoft.Extensions.Options.ConfigurationExtensions.dll
+/home/asitol/Desktop/Programming/CSharpProjects/GameDevBotProduction/bin/Debug/net10.0/Microsoft.Extensions.Options.DataAnnotations.dll
+/home/asitol/Desktop/Programming/CSharpProjects/GameDevBotProduction/bin/Debug/net10.0/Microsoft.Extensions.Primitives.dll
+/home/asitol/Desktop/Programming/CSharpProjects/GameDevBotProduction/bin/Debug/net10.0/NetCord.dll
+/home/asitol/Desktop/Programming/CSharpProjects/GameDevBotProduction/bin/Debug/net10.0/NetCord.Hosting.dll
+/home/asitol/Desktop/Programming/CSharpProjects/GameDevBotProduction/bin/Debug/net10.0/NetCord.Hosting.Services.dll
+/home/asitol/Desktop/Programming/CSharpProjects/GameDevBotProduction/bin/Debug/net10.0/NetCord.Services.dll
+/home/asitol/Desktop/Programming/CSharpProjects/GameDevBotProduction/bin/Debug/net10.0/System.Diagnostics.EventLog.dll
+/home/asitol/Desktop/Programming/CSharpProjects/GameDevBotProduction/bin/Debug/net10.0/runtimes/win/lib/net10.0/System.Diagnostics.EventLog.Messages.dll
+/home/asitol/Desktop/Programming/CSharpProjects/GameDevBotProduction/bin/Debug/net10.0/runtimes/win/lib/net10.0/System.Diagnostics.EventLog.dll
+/home/asitol/Desktop/Programming/CSharpProjects/GameDevBotProduction/obj/Debug/net10.0/GameDev bot.csproj.AssemblyReference.cache
+/home/asitol/Desktop/Programming/CSharpProjects/GameDevBotProduction/obj/Debug/net10.0/GameDev bot.GeneratedMSBuildEditorConfig.editorconfig
+/home/asitol/Desktop/Programming/CSharpProjects/GameDevBotProduction/obj/Debug/net10.0/GameDev bot.AssemblyInfoInputs.cache
+/home/asitol/Desktop/Programming/CSharpProjects/GameDevBotProduction/obj/Debug/net10.0/GameDev bot.AssemblyInfo.cs
+/home/asitol/Desktop/Programming/CSharpProjects/GameDevBotProduction/obj/Debug/net10.0/GameDev bot.csproj.CoreCompileInputs.cache
+/home/asitol/Desktop/Programming/CSharpProjects/GameDevBotProduction/obj/Debug/net10.0/GameDev .8A966EC8.Up2Date
+/home/asitol/Desktop/Programming/CSharpProjects/GameDevBotProduction/obj/Debug/net10.0/GameDev bot.dll
+/home/asitol/Desktop/Programming/CSharpProjects/GameDevBotProduction/obj/Debug/net10.0/refint/GameDev bot.dll
+/home/asitol/Desktop/Programming/CSharpProjects/GameDevBotProduction/obj/Debug/net10.0/GameDev bot.pdb
+/home/asitol/Desktop/Programming/CSharpProjects/GameDevBotProduction/obj/Debug/net10.0/GameDev bot.genruntimeconfig.cache
+/home/asitol/Desktop/Programming/CSharpProjects/GameDevBotProduction/obj/Debug/net10.0/ref/GameDev bot.dll

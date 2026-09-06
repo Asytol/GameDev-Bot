@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("GameDev bot")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+13b279635e0093cd5a50ee260964aa73f8c33802")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0b348bb460be4ea805082857f0d04fb71da45eb8")]
 [assembly: System.Reflection.AssemblyProductAttribute("GameDev bot")]
 [assembly: System.Reflection.AssemblyTitleAttribute("GameDev bot")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
