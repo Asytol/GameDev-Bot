@@ -33,6 +33,7 @@ namespace GameDevBot
     internal class MainProgram
     {
         public static Process DrawingApp;
+        public static StreamWriter DrawingWriter;
         static async Task Main(string[] args){
             SettingsHandler.LoadEnviorment();
 
@@ -66,8 +67,12 @@ namespace GameDevBot
             DrawingApp.StartInfo = startInfo;
             DrawingApp.Start();
 
+            DrawingWriter = DrawingApp.StandardInput;
+
             await host.RunAsync();
 
+            DrawingWriter.Close();
+            DrawingApp.WaitForExit();
             Console.WriteLine("discord bot closed");
         }
     }
@@ -155,35 +160,72 @@ namespace GameDevBot
         }
 
         static readonly string DrawingImage = "GtkImageOutput.png";
+        static int RetryAmount = 0;
 
         [SlashCommand("draw","Draws a square at a pixel position")]
-        public async void Draw(int Red, int Green, int Blue, int x, int y)
+        public async void Draw(int Red, int Green, int Blue, int x, int y,int width, int height)
         {
-            if (Context.Channel.Id != SettingsHandler.GlobalBotSettings.DrawingAppChannel)
+            if (RetryAmount > 5)
             {
-                InteractionMessageProperties error_message = SendingMessages.CreateMessage<InteractionMessageProperties>("Please send this command inside the appropriate channel",null,null,null);
+                InteractionMessageProperties error_message = SendingMessages.CreateMessage<InteractionMessageProperties>("Error on bot side, probably a broken pipe into the C applicatiom.. Retry limit reached, bot is going to give up and cry",null,null,null);
                 InteractionCallbackProperties error_callback = InteractionCallback.Message(error_message);
                 await Context.Interaction.SendResponseAsync(error_callback);
                 return;
             }
 
-            MainProgram.DrawingApp.StandardInput.WriteLine($"{Red}:{Green}:{Blue}:{x}:{y}:");
-            Thread.Sleep(300); //Gives the drawing app some leway
+            try
+            {
+                if (Context.Channel.Id != SettingsHandler.GlobalBotSettings.DrawingAppChannel)
+                {
+                    InteractionMessageProperties error_message = SendingMessages.CreateMessage<InteractionMessageProperties>("Please send this command inside the appropriate channel",null,null,null);
+                    InteractionCallbackProperties error_callback = InteractionCallback.Message(error_message);
+                    await Context.Interaction.SendResponseAsync(error_callback);
+                    return;
+                }
 
-            EmbedProperties embed = new EmbedProperties();
+                MainProgram.DrawingWriter.WriteLine($"{Red}:{Green}:{Blue}:{x}:{y}:{width}:{height}:");
+                Thread.Sleep(300); //Gives the drawing app some leway
 
-            System.IO.FileStream stream = File.OpenRead(DrawingImage);
-            AttachmentProperties attachment = new AttachmentProperties(DrawingImage,stream);
-            
-            Console.WriteLine("Name: " + attachment.FileName);
-            embed.WithImage(new EmbedImageProperties($"attachment://{DrawingImage}")).WithTitle("Drawing");
+                EmbedProperties embed = new EmbedProperties();
 
-            InteractionMessageProperties message = SendingMessages.CreateMessage<InteractionMessageProperties>($"Drew pixel at {x},{y}",embed,null,attachment);
+                System.IO.FileStream stream = File.OpenRead(DrawingImage);
+                AttachmentProperties attachment = new AttachmentProperties(DrawingImage,stream);
+                
+                Console.WriteLine("Name: " + attachment.FileName);
+                embed.WithImage(new EmbedImageProperties($"attachment://{DrawingImage}")).WithTitle("Drawing");
 
-            //don't forget to return a message with a picture
-            InteractionCallbackProperties callback = InteractionCallback.Message(message);
-            await Context.Interaction.SendResponseAsync(callback);
-            stream.Dispose();
+                InteractionMessageProperties message = SendingMessages.CreateMessage<InteractionMessageProperties>($"Drew pixel at {x},{y} (width:{width},height:{height}) RGB:{Red}|{Green}|{Blue}",embed,null,attachment);
+
+                //don't forget to return a message with a picture
+                InteractionCallbackProperties callback = InteractionCallback.Message(message);
+                await Context.Interaction.SendResponseAsync(callback);
+                stream.
+                Dispose();   
+            }
+            catch
+            {
+                string extraMsg = "Retry limit reached, bot is going to give up and cry";
+                if (RetryAmount != 5)
+                {
+                    MainProgram.DrawingWriter.Close();
+
+                    RetryAmount++;
+                    ProcessStartInfo startInfo = new ProcessStartInfo("GtkDrawingApp");
+                    startInfo.RedirectStandardInput = true; startInfo.UseShellExecute = false;
+
+                    MainProgram.DrawingApp = new Process();
+                    MainProgram.DrawingApp.StartInfo = startInfo;
+                    MainProgram.DrawingApp.Start();
+
+                    MainProgram.DrawingWriter = MainProgram.DrawingApp.StandardInput;
+                    extraMsg = "trying to restart the GTK C application";
+                }
+
+                InteractionMessageProperties error_message = SendingMessages.CreateMessage<InteractionMessageProperties>($"Error on bot side, probably a broken pipe into the C application {extraMsg}",null,null,null);
+                InteractionCallbackProperties error_callback = InteractionCallback.Message(error_message);
+                await Context.Interaction.SendResponseAsync(error_callback);
+                return;
+            }
         }
     }
     // ___--___
@@ -192,6 +234,7 @@ namespace GameDevBot
     {
         public ValueTask HandleAsync(Message message)
         {
+            
             logger.LogInformation("{}",message.Content);
             //client.SendMessageAsync(message.ChannelId,"test");
             if (message.GuildId != null)

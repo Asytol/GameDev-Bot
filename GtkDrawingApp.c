@@ -22,6 +22,10 @@ static void clear_surface (void){
     cairo_destroy(cr);
 }
 
+static void re_initialize_surface(void){
+    cairo_image_surface_create_from_png(ImageSavePath);
+}
+
 static void resize_cb (GtkWidget *widget, int width, int height, gpointer data){
     if (surface){
         cairo_surface_destroy(surface);
@@ -50,13 +54,13 @@ static void draw_cb(GtkDrawingArea *drawing_area,cairo_t *cr, int width, int hei
     cairo_paint(cr);
 }
 
-static void draw_brush(GtkWidget *widget, double x, double y, double red, double green, double blue){
+static void draw_brush(GtkWidget *widget, double x, double y, double red, double green, double blue, int width, int height){
     cairo_t *cr;
     
     cr = cairo_create(surface);
     cairo_set_source_rgb(cr,red,green,blue);
 
-    cairo_rectangle(cr, x - 3, y - 3,6,6);
+    cairo_rectangle(cr, x - 3, y - 3,width,height);
     cairo_fill(cr);
 
     cairo_destroy(cr);
@@ -65,7 +69,7 @@ static void draw_brush(GtkWidget *widget, double x, double y, double red, double
 }
 
 static void pressed(GtkGestureClick *gesture, int n_press, double x, double y, GtkWidget *area){
-    draw_brush(area, x, y,0,0,0);
+    draw_brush(area, x, y,0,0,0,6,6);
     cairo_surface_write_to_png(surface,ImageSavePath);
     g_print("drew at %f %f",x,y);
 }
@@ -77,20 +81,20 @@ static void close_window(void){
 }
 
 char inBuffer[DiscordCommandSize];
-int p[3];
+int p[2];
 
 
 gboolean Callback(void* data){
-    p[0] = dup(fileno(stdin));
 
     //write(p[1], "244:255:200:5:60:.", DiscordCommandSize);
 
     read(p[0],inBuffer,DiscordCommandSize);
 
-    int values[5];
+    int values[7];
 
     char TempChar[100];
     char* inBufferIndex = inBuffer;
+
     if (inBuffer != ""){ 
         char* StartIndex = inBuffer;
         uint8_t length = 0;
@@ -115,12 +119,12 @@ gboolean Callback(void* data){
 
             sscanf(TempChar,"%d",&values[i]);
         }
-        g_print("red: %d, green: %d, blue: %d, x: %d, y: %d\n",values[0],values[1],values[2],values[3],values[4]);
+        //g_print("red: %d, green: %d, blue: %d, x: %d, y: %d, width: %d, height: %d\n",values[0],values[1],values[2],values[3],values[4],values[5],values[6]);
         
         //Seg faulted for some reason due to one of these 2 lines? I'm gonna just not look into that.
 
 
-        draw_brush((GtkWidget*)(gpointer*)data,values[3],values[4],(double)values[0]/255,(double)values[1]/255,(double)values[2]/255);
+        draw_brush((GtkWidget*)(gpointer*)data,values[3],values[4],(double)values[0]/255,(double)values[1]/255,(double)values[2]/255,values[5],values[6]);
         
         cairo_surface_write_to_png(surface,ImageSavePath);
     }
@@ -161,8 +165,9 @@ static void activate(GtkApplication *app, gpointer data){
         close(p[0]); close(p[1]);
         return;
     }
+    p[1] = dup(fileno(stdin));
 
-    g_timeout_add_seconds(0.4,Callback,Drawing_pointer);
+    g_timeout_add_seconds(0.1,Callback,Drawing_pointer);
 
     //gtk_window_present(GTK_WINDOW(window));
 }
@@ -175,6 +180,7 @@ int main(int argc, char** argv){
     g_signal_connect(app,"activate",G_CALLBACK(activate),NULL);
     status = g_application_run(G_APPLICATION(app),argc,argv);
     g_object_unref(app);
+    close(p[0]); close(p[1]);
 
     return status;
 }
